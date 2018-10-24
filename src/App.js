@@ -5,48 +5,95 @@ class App extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      items: [],
+      numberOfRow: 0,
+      numberOfColumn: 0
+    }
+
     this.handleClick = this.handleClick.bind(this);
   }
 
   handleClick() {
     let items = [...this.state.items];
+    let numberOfColumn = 0;
+    let numberOfRow = 0;
+
     items.push({firstrow: "",  secondrow: ""});
-  }
+
+    numberOfRow = this.refs.row.value;
+    numberOfColumn = this.refs.column.value;
+    
+    this.setState({
+      items,
+      username: '',
+      password: '',
+      numberOfRow,
+      numberOfColumn
+    });
+  } 
 
   render() {
     return (
       <div className="App">
-        <button onClick={this.handleClick}>Add</button>
-        <Table items={this.state.items} />
+      <header className="App-header">
+          <div>
+            <label>Row</label>
+            <input type="number" ref="row" />
+            <label>Column</label>
+            <input type="number" ref="column" />
+            <button onClick={this.handleClick}>Add</button>
+          </div>
+          <Table numberOfColumn={ this.state.numberOfColumn } numberOfRow={ this.state.numberOfRow } />
+        </header>
       </div>
     );
   }
 }
 
-class Table extends React {
+class Table extends Component {
   render() {
-      const items = this.props.items;
+      const numberOfColumn = this.props.numberOfColumn;
+      const numberOfRow = this.props.numberOfRow;
       return (
         <div id="Table">
           <table>
             <tbody>
-              <tr>
-                <th>Username</th>
-                <th>Password</th>
-              </tr>
-              {items.map(item => {
-                return (
-                  <tr>
-                    <td>{this.firstrow}</td>
-                    <td>{this.secondrow}</td>
-                  </tr>
-                );
-              })}
+              <TableCells numberOfColumn={ numberOfColumn } numberOfRow={ numberOfRow } ></TableCells>
             </tbody>
           </table>
         </div>
       );
     }
+}
+
+class TableCells extends Component {
+  render() {
+      
+      var numberOfRow = this.props.numberOfRow;
+      var numberOfColumn = this.props.numberOfColumn;
+
+      var rows = Array.from({length: numberOfRow}).map((_, rowIdx) => (
+        <tr key={rowIdx}>{
+          Array.from({length: numberOfColumn}).map((_, colIdx) => (
+            <EditableCell key={colIdx}/>
+          ))
+          
+        }</tr>
+      ))
+ 
+      return (<tbody>{rows}</tbody>);
+  }
+}
+
+class EditableCell extends React.Component {
+  render() {
+    return (
+      <td>
+        <input type='text' />
+      </td>
+    );
+  }
 }
 
 export default App;
