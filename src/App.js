@@ -6,7 +6,6 @@ class App extends Component {
     super(props);
 
     this.state = {
-      items: [],
       numberOfRow: 0,
       numberOfColumn: 0
     }
@@ -15,24 +14,18 @@ class App extends Component {
   }
 
   handleClick() {
-    let items = [...this.state.items];
     let numberOfColumn = 0;
     let numberOfRow = 0;
-
-    items.push({firstrow: "",  secondrow: ""});
 
     numberOfRow = this.refs.row.value;
     numberOfColumn = this.refs.column.value;
     
     this.setState({
-      items,
-      username: '',
-      password: '',
       numberOfRow,
       numberOfColumn
     });
-  } 
-
+  }
+  
   render() {
     return (
       <div className="App">
@@ -59,7 +52,7 @@ class Table extends Component {
         <div id="Table">
           <table>
             <tbody>
-              <TableCells numberOfColumn={ numberOfColumn } numberOfRow={ numberOfRow } ></TableCells>
+              <TableCells numberOfColumn={ numberOfColumn } numberOfRow={ numberOfRow }></TableCells>
             </tbody>
           </table>
         </div>
@@ -68,19 +61,28 @@ class Table extends Component {
 }
 
 class TableCells extends Component {
+
+  onDeleteEvent = rowIdx => {
+    
+  };
+
   render() {
       
       var numberOfRow = this.props.numberOfRow;
       var numberOfColumn = this.props.numberOfColumn;
-
+      
       var rows = Array.from({length: numberOfRow}).map((_, rowIdx) => (
         <tr key={rowIdx}>{
           Array.from({length: numberOfColumn}).map((_, colIdx) => (
             <EditableCell key={colIdx}/>
           ))
-          
-        }</tr>
+        }
+        <td>
+          <input type="button" onClick={this.onDeleteEvent(rowIdx)} value="X" />
+        </td>
+        </tr>
       ))
+      
  
       return (<tbody>{rows}</tbody>);
   }
