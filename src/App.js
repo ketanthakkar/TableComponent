@@ -7,7 +7,8 @@ class App extends Component {
 
     this.state = {
       numberOfRow: 0,
-      numberOfColumn: 0
+      numberOfColumn: 0,
+      rowCount: 0
     }
 
     this.handleClick = this.handleClick.bind(this);
@@ -19,25 +20,48 @@ class App extends Component {
 
     numberOfRow = this.refs.row.value;
     numberOfColumn = this.refs.column.value;
+
+    var rowCount = Array.from({ length: numberOfRow }).map((_, rowIdx) => (
+      <tr key={rowIdx}>{
+        Array.from({length: numberOfColumn}).map((_, colIdx) => (
+          <EditableCell key={colIdx}/>
+        ))
+      }
+      <td>
+        <input  type="button" onClick={() => this.onDeleteEvent(rowIdx)} value="X" />
+      </td>
+      </tr>
+      
+    ));
     
     this.setState({
       numberOfRow,
-      numberOfColumn
+      numberOfColumn,
+      rowCount
     });
   }
+
+  onDeleteEvent = id => {
+    let rowCount = this.state.rowCount;
+    rowCount.splice(id, 1);
+
+    this.setState({
+      rowCount
+    });
+  };
   
   render() {
     return (
       <div className="App">
       <header className="App-header">
-          <div>
+          <div className="userInput">
             <label>Row</label>
             <input type="number" ref="row" />
             <label>Column</label>
             <input type="number" ref="column" />
             <button onClick={this.handleClick}>Add</button>
           </div>
-          <Table numberOfColumn={ this.state.numberOfColumn } numberOfRow={ this.state.numberOfRow } />
+          <Table rowCount={ this.state.rowCount } />
         </header>
       </div>
     );
@@ -46,46 +70,17 @@ class App extends Component {
 
 class Table extends Component {
   render() {
-      const numberOfColumn = this.props.numberOfColumn;
-      const numberOfRow = this.props.numberOfRow;
+      let rowCount = this.props.rowCount;
       return (
         <div id="Table">
           <table>
             <tbody>
-              <TableCells numberOfColumn={ numberOfColumn } numberOfRow={ numberOfRow }></TableCells>
+              {rowCount}
             </tbody>
           </table>
         </div>
       );
     }
-}
-
-class TableCells extends Component {
-
-  onDeleteEvent = rowIdx => {
-    
-  };
-
-  render() {
-      
-      var numberOfRow = this.props.numberOfRow;
-      var numberOfColumn = this.props.numberOfColumn;
-      
-      var rows = Array.from({length: numberOfRow}).map((_, rowIdx) => (
-        <tr key={rowIdx}>{
-          Array.from({length: numberOfColumn}).map((_, colIdx) => (
-            <EditableCell key={colIdx}/>
-          ))
-        }
-        <td>
-          <input type="button" onClick={this.onDeleteEvent(rowIdx)} value="X" />
-        </td>
-        </tr>
-      ))
-      
- 
-      return (<tbody>{rows}</tbody>);
-  }
 }
 
 class EditableCell extends React.Component {
