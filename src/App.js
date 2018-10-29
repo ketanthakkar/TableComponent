@@ -4,53 +4,48 @@ import './App.css';
 class App extends Component {
   constructor(props) {
     super(props);
-
+    
     this.state = {
       numberOfRow: 0,
       numberOfColumn: 0,
-      rowCount: 0
+      data: []
     }
 
     this.handleClick = this.handleClick.bind(this);
+    this.onExportClick = this.onExportClick.bind(this);
   }
 
   //Add row and column click handler
   handleClick() {
     let numberOfColumn = 0;
     let numberOfRow = 0;
+    let data = [];
 
     numberOfRow = this.refs.row.value;
     numberOfColumn = this.refs.column.value;
 
+    for (var i = 0; i < numberOfRow; i++) {
+      data.push([0])
+        for (var j = 0; j < numberOfColumn; j++) {
+            data[i][j] = 0;
+        }
+    }
+
     if(numberOfRow > 0 && numberOfColumn > 0) {
       this.refs.exportBtn.disabled = false;
     }
-
-    var rowCount = Array.from({ length: numberOfRow }).map((_, rowIdx) => (
-      <tr key={rowIdx}>{
-        Array.from({length: numberOfColumn}).map((_, colIdx) => (
-          <EditableCell key={colIdx}/>
-        ))
-      }
-      <td>
-        <input type="button" onClick={() => this.onDeleteEvent(rowIdx)} value="X" />
-      </td>
-      </tr>
-      
-    ));
     
     this.setState({
       numberOfRow,
       numberOfColumn,
-      rowCount
+      data
     });
   }
-
 
   ////Export CSV Click handler
   onExportClick() {
     var html = document.querySelector("table").outerHTML;
-	  this.export_to_csv(html, "table.csv");
+    this.export_to_csv(html, "table.csv");
   }
 
   //Export to CSV function
@@ -65,7 +60,7 @@ class App extends Component {
               row.push(cols[j].value);
           }
           
-      csv.push(row.join(","));		
+      csv.push(row.join(","));    
     }
     this.download_csv(csv.join("\n"), filename);
   }
@@ -84,16 +79,6 @@ class App extends Component {
       document.body.appendChild(downloadLink);
       downloadLink.click();
   }
-
-  //Delete row handler
-  onDeleteEvent = id => {
-    let rowCount = this.state.rowCount;
-    rowCount.splice(id, 1);
-
-    this.setState({
-      rowCount
-    });
-  };
   
   render() {
     return (
@@ -105,27 +90,72 @@ class App extends Component {
             <label>Column</label>
             <input type="text" ref="column" maxLength="2" onkeyup="this.value = this.value.replace(/[^a-z]/, '')" />
             <button onClick={this.handleClick}>Add</button>
-            <button ref="exportBtn" disabled onClick={() => this.onExportClick()}>Export to CSV</button>
+            <button ref="exportBtn" onClick={() => this.onExportClick()}>Export to CSV</button>
           </div>
-          <div className="display">
-            <Table rowCount={ this.state.rowCount } />
-          </div>
-        </header>
+          {
+            this.state.data.length > 0 &&
+            <div className="display">
+              <Table data={this.state.data} />
+            </div>
+          }
+      </header>
       </div>
     );
   }
 }
 
+function Thead({ n, handleColumn }) {
+  const arr = [];
+  for (let i = 0; i < n; i++) {
+    arr.push(<td><button onClick={() => handleColumn(i)}>Remove</button></td>);
+  }
+  return <thead><tr>{arr}</tr></thead>;
+}
+
+function Row({ row, i, handleRow }) {
+  return (
+    <tr>
+      {row.map(cell => <EditableCell>{cell}</EditableCell>)} 
+      <td><button onClick={() => handleRow(i)}>x</button></td>
+    </tr>
+  )
+}
+
 class Table extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = { data: props.data };
+    this.handleColumn = this.handleColumn.bind(this);
+    this.handleRow = this.handleRow.bind(this);
+  }
+
+  handleColumn(n) {
+    const newData = this.state.data.map(row => {
+      return row.filter((el, i) => i !== n);
+    });
+    this.setState({ data: newData });
+  }
+
+  handleRow(n) {
+    const newData = this.state.data.filter((el, i) => i !== n);
+    this.setState({ data: newData });
+  }
+
   render() {
-      let rowCount = this.props.rowCount;
+      let { data } = this.state;
+			if (!data.length) return <div></div>
       return (
         <div id="Table">
-          <table>
-              {rowCount}
-          </table>
+              <table>
+              <Thead n={data[0].length} handleColumn={this.handleColumn} />
+                <tbody>
+                  {data.map((row, i) => <Row row={row} i={i} handleRow={this.handleRow} />)}
+                </tbody> 
+              </table>
         </div>
-      );
+      );      
+
     }
 }
 
